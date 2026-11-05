@@ -78,11 +78,18 @@ class AdminController extends Controller
 
     public function destroy($id)
     {
+        $user = User::findOrFail($id);
+
+        // Proteksi di mode demo: cegah penghapusan akun demo utama
+        if (config('app.demo_mode') && in_array($user->email, ['admin@demo.com', 'user@demo.com'])) {
+            return redirect()
+                ->back()
+                ->with('error', 'Aksi ditolak: Akun demo utama dilindungi dan tidak dapat dihapus di mode demo.');
+        }
+
         DB::beginTransaction();
 
         try {
-
-            $user = User::findOrFail($id);
 
             /*
             |--------------------------------------------------------------------------

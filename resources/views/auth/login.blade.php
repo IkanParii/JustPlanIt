@@ -65,6 +65,8 @@
         class="mb-4 text-green-400"
         :status="session('status')" />
 
+    <x-demo-badge />
+
     <form method="POST"
           action="{{ route('login') }}"
           class="space-y-5">

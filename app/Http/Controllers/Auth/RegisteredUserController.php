@@ -28,8 +28,19 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
+        // Tolak registrasi jika mode demo aktif (Backend check)
+        if (config('app.demo_mode')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Registrasi dinonaktifkan di mode demo. Silakan login dengan akun demo yang tersedia.',
+                ], 403);
+            }
+
+            abort(403, 'Registrasi dinonaktifkan di mode demo. Silakan login dengan akun demo yang tersedia.');
+        }
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],

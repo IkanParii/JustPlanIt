@@ -1,0 +1,24 @@
+# Konfigurasi Caddy untuk TaskFlow Demo
+# Ganti {$DOMAIN:demo.domainku.com} dengan domain asli Anda di .env
+{$APP_DOMAIN:demo.domainku.com} {
+    encode gzip zstd
+
+    # Proxy ke container Nginx TaskFlow
+    reverse_proxy web:80
+
+    # Header Keamanan
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Log akses
+    log {
+        output file /var/log/caddy/taskflow_access.log {
+            roll_size 10MB
+            roll_keep 3
+        }
+    }
+}

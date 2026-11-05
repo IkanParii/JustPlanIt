@@ -57,6 +57,8 @@
         </p>
     </div>
 
+    <x-demo-badge />
+
     <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 

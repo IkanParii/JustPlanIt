@@ -15,6 +15,7 @@ class Planner extends Model
         'title',
         'description',
         'deadline',
+        'priority',
         'status',
     ];
 

@@ -1,0 +1,68 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: justplanit_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - justplanit_storage:/var/www/html/storage/app/public
+    networks:
+      - justplanit_internal
+      - shared-net
+    deploy:
+      resources:
+        limits:
+          memory: 96M
+        reservations:
+          memory: 32M
+    healthcheck:
+      test: ["CMD-SHELL", "cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    image: nginx:alpine
+    container_name: justplanit_web
+    restart: unless-stopped
+    ports:
+      # Terikat ke localhost VPS agar aman dan siap diteruskan oleh Caddy / Reverse Proxy
+      - "127.0.0.1:${APP_PORT:-8088}:80"
+    volumes:
+      - ./:/var/www/html:ro
+      - justplanit_storage:/var/www/html/storage/app/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - justplanit_internal
+      - shared-net
+    deploy:
+      resources:
+        limits:
+          memory: 24M
+        reservations:
+          memory: 12M
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/up || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  justplanit_storage:
+    name: justplanit_storage
+
+networks:
+  justplanit_internal:
+    name: justplanit_internal
+    driver: bridge
+  shared-net:
+    name: shared-net
+    external: true
